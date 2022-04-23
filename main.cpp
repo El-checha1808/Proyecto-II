@@ -18,6 +18,10 @@ void agregarSeccion(MYSQL*);
 void agregarNota(MYSQL*);
 void buscarAlu(MYSQL*);
 void mostrarPromedioAl(MYSQL*);
+void borrarAlumno(MYSQL*);
+void mosAluGrado(MYSQL*);
+void modificarAl(MYSQL*);
+void mostrarGrados(MYSQL*);
 
 
 int main(){
@@ -48,6 +52,10 @@ int main(){
 				cout << "4. Agregar Nota" << endl;
 				cout << "5. Buscar Alumno" << endl;
 				cout << "6. Mostrar Promedio de Alumno" << endl;
+				cout << "7. Borrar Alumno" << endl;
+				cout << "8. Mostrar Alumnos de un Grado" << endl;
+				cout << "9. Modificar datos de alumno" << endl;
+				cout << "10. Mostrar grados" << endl;
 				cout << "0. Salir\n" << endl;
 				cin >> sel;
 				
@@ -91,6 +99,34 @@ int main(){
 					case 6:
 						system("cls");
 						mostrarPromedioAl(connection);
+						system("pause");
+						system("cls");
+						break;
+						
+					case 7:
+						system("cls");
+						borrarAlumno(connection);
+						system("pause");
+						system("cls");
+						break;
+						
+					case 8:
+						system("cls");
+						mosAluGrado(connection);
+						system("pause");
+						system("cls");
+						break;
+						
+					case 9:
+						system("cls");
+						modificarAl(connection);
+						system("pause");
+						system("cls");
+						break;
+						
+					case 10:
+						system("cls");
+						mostrarGrados(connection);
 						system("pause");
 						system("cls");
 						break;
@@ -157,6 +193,7 @@ void agregarAlu(MYSQL *connection){
 	if (result == 0){
 				
 		cout << "\nRegistro guardado con exito!!\n" << endl;
+		
 	} else {
 				
 		cout << "\nNo fue posible guardar el registro!! \n" << mysql_error(connection) << endl;
@@ -398,6 +435,289 @@ void mostrarPromedioAl(MYSQL *connection){
 		cout << "\nNo fue posible obtener los datos solicitados" << mysql_error(connection) << endl;
 		
 	}
+		
+}
+
+void borrarAlumno(MYSQL *connection){
 	
+	string id, sqlII;
+	int sel, res; 
 	
+	cout << "****************************************" << endl;
+	cout << "*           Eliminar Alumno            *" << endl;
+	cout << "**************************************** \n" << endl;
+	cout << "Clave del alumno: ";
+	cin.ignore(1, '\n');
+	getline(cin, id);
+	
+	cout << "\nConfirma eliminar alumno? 1. Si, 0. No: ";
+	cin >> sel;
+	
+	if (sel == 1){
+		
+		sql = "delete from notas where alumno_id_alumno = '" + id + "'";
+		query = sql.c_str();
+		result = mysql_query(connection, query);
+		
+		sqlII = "delete from alumno where id_alumno = '" + id + "'";
+		query = sqlII.c_str();
+		res = mysql_query(connection, query);
+		
+		if (result == 0 && res == 0){
+		
+			cout << "\nRegistro eliminado con exito!!\n" << endl;
+		
+		} else {
+		
+			cout << "\nNo fue posible eliminar el registro!!\n" << mysql_error(connection) << endl;
+		}
+				
+	} else {
+		
+		cout << "No se hicieron cambios!!" << endl;
+	}
+	
+}
+
+void mosAluGrado(MYSQL *connection){
+	
+	MYSQL_ROW row;
+	MYSQL_RES* data;
+	string id;
+	
+	cout << "****************************************" << endl;
+	cout << "*         Alumnos de un grado          *" << endl;
+	cout << "**************************************** \n" << endl;
+	cout << "Grado: ";
+	cin.ignore(1, '\n');
+	getline(cin, id);
+	cout << "\n";
+	
+	sql = "select al.id_alumno, al.nombre, al.apellido, gr.grado, sec.seccion from alumno as al join grado as gr on al.grado_id_grado = gr.id_grado join seccion as sec on al.seccion_id_seccion = sec.id_seccion where grado_id_grado = '" + id + "'";
+	query =sql.c_str();
+	result = mysql_query(connection, query);
+	
+	if (result == 0){
+		
+		data = mysql_store_result(connection);
+		int countColumns = mysql_num_fields(data);
+		
+		while(row = mysql_fetch_row(data)){
+			
+			for (int i = 0; i < countColumns; i++){
+				
+				cout << row[i] << " -- ";
+				 
+			}	
+			
+			cout << "\n";
+			
+		}
+		
+	} else {
+		
+		cout << "\nNo fue posible obtener los datos requeridos!!\n" << mysql_error(connection) << endl;
+		
+	}
+	
+	cout << "\n";
+}
+
+void modificarAl(MYSQL *connection){
+	
+	string id, nuDato;
+	int sel;
+	
+	cout << "****************************************" << endl;
+	cout << "*      Modificar datos de Alumno       *" << endl;
+	cout << "**************************************** \n" << endl;
+	cout << "Clave Alumno: ";
+	cin.ignore(1, '\n');
+	getline(cin, id);
+	
+	cout << "Que dato desea modificar?\n " << endl;
+	cout << "1. Nombre" << endl;
+	cout << "2. Apellido" << endl;
+	cout << "3. Edad" << endl;
+	cout << "4. Correo" << endl;
+	cout << "5. Telefono" << endl;
+	cout << "6. Grado" << endl;
+	cout << "7. Seccion" << endl;
+	cin >> sel;
+	
+	switch (sel){
+		
+		case 1:
+			//system("cls");
+			cout << "\nNuevo nombre: ";
+			cin.ignore(1, '\n');
+			getline(cin, nuDato);
+			sql = "update alumno set nombre = '" + nuDato + "' where id_alumno = '" + id + "'";
+			query = sql.c_str();
+			result = mysql_query(connection, query);
+		
+			if (result == 0){
+			
+				cout << "\nDato actualizado correctamente\n" << endl;
+			
+			} else {
+			
+				cout << "\nNo se pudo realizar la actualizacion requerida\n" << mysql_error(connection) << endl;
+			}
+			break;
+			
+		case 2:
+			//system("cls");
+			cout << "\nNuevo apellido: ";
+			cin.ignore(1, '\n');
+			getline(cin, nuDato);
+			sql = "update alumno set apellido = '" + nuDato + "' where id_alumno = '" + id + "'";
+			query = sql.c_str();
+			result = mysql_query(connection, query);
+		
+			if (result == 0){
+			
+				cout << "\nDato actualizado correctamente\n" << endl;
+			
+			} else {
+			
+				cout << "\nNo se pudo realizar la actualizacion requerida\n" << mysql_error(connection) << endl;
+			}
+			break;
+		
+		case 3:
+			//system("cls");
+			cout << "\nNueva edad: ";
+			cin.ignore(1, '\n');
+			getline(cin, nuDato);
+			sql = "update alumno set edad = '" + nuDato + "' where id_alumno = '" + id + "'";
+			query = sql.c_str();
+			result = mysql_query(connection, query);
+		
+			if (result == 0){
+			
+				cout << "\nDato actualizado correctamente\n" << endl;
+			
+			} else {
+			
+				cout << "\nNo se pudo realizar la actualizacion requerida\n" << mysql_error(connection) << endl;
+			}
+			break;
+			
+		case 4:
+			//system("cls");
+			cout << "\nNuevo correo: ";
+			getline(cin, nuDato);
+			sql = "update alumno set correo = '" + nuDato + "' where id_alumno = '" + id + "'";
+			query = sql.c_str();
+			result = mysql_query(connection, query);
+		
+			if (result == 0){
+			
+				cout << "\nDato actualizado correctamente\n" << endl;
+			
+			} else {
+			
+				cout << "\nNo se pudo realizar la actualizacion requerida\n" << mysql_error(connection) << endl;
+			}
+			break;
+			
+		case 5:
+			//system("cls");
+			cout << "\nNuevo telefono: ";
+			cin.ignore(1, '\n');
+			getline(cin, nuDato);
+			sql = "update alumno set telefono = '" + nuDato + "' where id_alumno = '" + id + "'";
+			query = sql.c_str();
+			result = mysql_query(connection, query);
+		
+			if (result == 0){
+			
+				cout << "\nDato actualizado correctamente\n" << endl;
+			
+			} else {
+			
+				cout << "\nNo se pudo realizar la actualizacion requerida\n" << mysql_error(connection) << endl;
+			}
+			break;
+			
+		case 6:
+			//system("cls");
+			cout << "\nNuevo grado: ";
+			cin.ignore(1, '\n');
+			getline(cin, nuDato);
+			sql = "update alumno set grado_id_grado = '" + nuDato + "' where id_alumno = '" + id + "'";
+			query = sql.c_str();
+			result = mysql_query(connection, query);
+		
+			if (result == 0){
+			
+				cout << "\nDato actualizado correctamente\n" << endl;
+			
+			} else {
+			
+				cout << "\nNo se pudo realizar la actualizacion requerida\n" << mysql_error(connection) << endl;
+			}
+			break;
+			
+		case 7:
+			//system("cls");
+			cout << "\nNueva seccion: ";
+			cin.ignore(1, '\n');
+			getline(cin, nuDato);
+			sql = "update alumno set seccion_id_seccion = '" + nuDato + "' where id_alumno = '" + id + "'";
+			query = sql.c_str();
+			result = mysql_query(connection, query);
+		
+			if (result == 0){
+			
+				cout << "\nDato actualizado correctamente\n" << endl;
+			
+			} else {
+			
+				cout << "\nNo se pudo realizar la actualizacion requerida\n" << mysql_error(connection) << endl;
+			}
+			break;
+			
+	}
+	
+}
+
+void mostrarGrados(MYSQL *connection){
+	
+	MYSQL_ROW row;
+	MYSQL_RES* data;
+	
+	cout << "****************************************" << endl;
+	cout << "*      Mostrar grados existentes       *" << endl;
+	cout << "**************************************** \n" << endl;
+	
+	sql = "select * from grado";
+	query = sql.c_str();
+	result = mysql_query(connection, query);
+	
+	if (result == 0){
+		
+		data = mysql_store_result(connection);
+		int countColumns = mysql_num_fields(data);
+		
+		while(row = mysql_fetch_row(data)){
+			
+			for (int i = 0; i < countColumns; i++){
+				
+				cout << row[i] << " -- ";
+				 
+			}	
+			
+			cout << "\n";
+			
+		}
+		
+	} else {
+		
+		cout << "\nNo fue posible obtener los datos requeridos!!\n" << mysql_error(connection) << endl;
+		
+	}	
+	
+	cout << "\n";
 }
